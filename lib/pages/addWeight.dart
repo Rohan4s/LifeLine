@@ -30,7 +30,7 @@ class _AddWeightState extends State<AddWeight> {
     double bmi = weight / (height * height);
     bmi = double.parse(bmi.toStringAsFixed(2));
     WeightClass weightModel = WeightClass(weight: weight, bmi: bmi);
-    int id = await WeightDBhelper.addNote(weightModel);
+    int id = await WeightDBhelper.addWeight(weightModel);
     print('$id inserted');
     if(!context.mounted)return;
     Navigator.of(context).pop(true);

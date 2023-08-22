@@ -68,7 +68,7 @@ class _WeightState extends State<Weight> {
 
   //functions
   Future getWeights() async {
-    List<WeightClass>? ListWeights = await WeightDBhelper.getAllNotes();
+    List<WeightClass>? ListWeights = await WeightDBhelper.getAllWeights();
 
     setState(() {
       weights = ListWeights!;

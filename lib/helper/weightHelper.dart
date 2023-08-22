@@ -15,7 +15,7 @@ class WeightDBhelper {
   }
 
   //
-  static Future<int> addNote(WeightClass weight) async {
+  static Future<int> addWeight(WeightClass weight) async {
     final db = await _getDB();
     if (db == null)
       print('fkyou');
@@ -34,12 +34,12 @@ class WeightDBhelper {
   //       conflictAlgorithm: ConflictAlgorithm.replace);
   // }
 
-  static Future<int> deleteNote() async {
+  static Future<int> deleteAllWeights() async {
     final db = await _getDB();
     return await db.rawDelete('DELETE FROM $_tableName ');
   }
   //
-  static Future<List<WeightClass>?> getAllNotes() async {
+  static Future<List<WeightClass>?> getAllWeights() async {
     final db = await _getDB();
     if(db==null)print('fk you');
     // else
