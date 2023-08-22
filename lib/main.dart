@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'pages/prescription.dart';
 import 'pages/report.dart';
 import 'pages/weight.dart';
+import 'widgets/graph.dart';
+import 'widgets/healthMetrics.dart';
 
 void main() {
   runApp(const MyApp());

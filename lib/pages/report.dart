@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lifeline/pages/addReport.dart';
 
 class Report extends StatefulWidget {
   const Report({Key? key}) : super(key: key);
@@ -48,7 +49,9 @@ class _ReportState extends State<Report> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: null, //todo
+        onPressed: (){
+          Navigator.push(context,MaterialPageRoute(builder: (context)=>AddReport()));
+        }, //todo
         child: Icon(Icons.add),
       ),
     );

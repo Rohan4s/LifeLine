@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lifeline/pages/addPrescription.dart';
 
 class Prescription extends StatefulWidget {
   const Prescription({Key? key}) : super(key: key);
@@ -48,7 +49,9 @@ class _PrescriptionState extends State<Prescription> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: null,//todo
+        onPressed: (){
+          Navigator.push(context,MaterialPageRoute(builder: (context)=>AddPrescription()));
+        },
         child: Icon(Icons.add),
 
       ),
