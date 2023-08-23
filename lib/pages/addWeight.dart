@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lifeline/entities/weightClass.dart';
-import 'package:lifeline/helper/weightHelper.dart';
+import 'package:lifeline/helper/databaseHelper.dart';
 
 class AddWeight extends StatefulWidget {
   const AddWeight({Key? key}) : super(key: key);
@@ -22,15 +22,18 @@ class _AddWeightState extends State<AddWeight> {
   }
 
   submit() async {
+
     double height = 1.52;
     print(weightController.text);
+
+    // closes keyboard
     FocusManager.instance.primaryFocus?.unfocus();
 
     double weight = double.parse(weightController.text);
     double bmi = weight / (height * height);
     bmi = double.parse(bmi.toStringAsFixed(2));
     WeightClass weightModel = WeightClass(weight: weight, bmi: bmi);
-    int id = await WeightDBhelper.addWeight(weightModel);
+    int id = await DBhelper.addWeight(weightModel);
     print('$id inserted');
     if(!context.mounted)return;
     Navigator.of(context).pop(true);
@@ -63,7 +66,7 @@ class _AddWeightState extends State<AddWeight> {
                   ),
                 ),
                 controller: weightController,
-                keyboardType: TextInputType.numberWithOptions(
+                keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                   signed: false,
                 ),

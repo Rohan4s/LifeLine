@@ -1,6 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lifeline/entities/reportClass.dart';
+import 'package:lifeline/helper/databaseHelper.dart';
+import 'package:lifeline/helper/reportHelper.dart';
+import 'package:path_provider/path_provider.dart';
 
 class AddReport extends StatefulWidget {
   const AddReport({Key? key}) : super(key: key);
@@ -11,21 +15,47 @@ class AddReport extends StatefulWidget {
 class _AddReportState extends State<AddReport> {
   File? _image;
   final titleController = TextEditingController();
-  Future getImage({required bool camera}) async{
-      final image = camera==true? await ImagePicker().pickImage(source: ImageSource.camera):await ImagePicker().pickImage(source: ImageSource.gallery);
-      if(image == null)return;
-      final tempImage = File(image.path);
+  bool _empty = false;
+  String? img;
 
-      setState(() {
-        _image = tempImage;
-      });
+  final noImageSnackBar = const SnackBar(
+    content: Text('An image of the report must be added'),
+  );
+  final reportAdded = const SnackBar(
+    content: Text(
+      'Successfully Added Report',
+      style: TextStyle(color: Colors.red),
+    ),
+  );
+
+  Future getImage({required bool camera}) async {
+    final image = camera == true
+        ? await ImagePicker().pickImage(source: ImageSource.camera)
+        : await ImagePicker().pickImage(source: ImageSource.gallery);
+
+    if (image == null) return;
+    final tempImage = File(image.path);
+
+    setState(() {
+      _image = tempImage;
+    });
+
+    return tempImage;
+  }
+
+  Future<String> saveImageLocally(File imageFile) async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final imageName = DateTime.now().millisecondsSinceEpoch.toString();
+    final savedImage = await imageFile.copy('${appDir.path}/$imageName.png');
+    print('savedImage = ${savedImage.path}');
+    return savedImage.path;
   }
 
   @override
   void initState() {
     // TODO: implement initState
     titleController.addListener(() {
-        print(titleController.text);
+      print(titleController.text);
     });
     super.initState();
   }
@@ -34,45 +64,108 @@ class _AddReportState extends State<AddReport> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Report'),
-        backgroundColor: Colors.blue,
+        title: const Text('Add Report',style: TextStyle(color: Colors.white),),
+        centerTitle: true,
+        backgroundColor: Colors.indigo,
       ),
-      body: Center(
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(100, 50, 100, 50),
-          children: [
-            TextField(
-              controller: titleController ,
+      body: ListView(
+        // padding: EdgeInsets.fromLTRB(100, 50, 100, 50),
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(35, 100, 35, 20),
+            child: TextField(
+              controller: titleController,
               decoration: InputDecoration(
-                labelText: 'Title',
+                labelText: 'Enter title',
                 border: OutlineInputBorder(),
+                errorText: _empty ? 'Title can\'t be empty' : null,
               ),
             ),
-            _image ==null? Image(image: AssetImage('Assets/weightbg.png')):Image.file(_image!),
-            pickImageButton(
-              text: 'Select From Gallery',
-              icon: Icons.image_outlined,
-              onClick: ()=>getImage(camera: false)
-            ),
-            pickImageButton(
-              text: 'Select From Camera',
-              icon: Icons.camera,
-                onClick: ()=>getImage(camera: true)
-            ),
+          ),
+          _image == null
+              ? const SizedBox(
+                  height: 30,
+                )
+              : Container(
+            padding: const EdgeInsets.fromLTRB(35, 10, 35, 20),
+                  child: Image.file(_image!,height: 350,),
+                ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              pickImageButton(
+                  text: 'From Gallery',
+                  icon: Icons.image_outlined,
+                  onClick: () => getImage(camera: false)),
+              const SizedBox(
+                width: 20,
+              ),
+              pickImageButton(
+                  text: 'From Camera',
+                  icon: Icons.camera,
+                  onClick: () => getImage(camera: true)),
+            ],
+          ),
+          const SizedBox(height: 80,)
 
-          ],
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          setState(() {
+            _empty = titleController.text.isEmpty ? true : false;
+          });
+
+          if (_empty) {
+            // Show a snackbar or some feedback to the user
+            return;
+          }
+          if (_image == null) {
+            ScaffoldMessenger.of(context).showSnackBar(noImageSnackBar);
+          }
+
+          String imagePath = await saveImageLocally(_image!);
+          ReportClass report = ReportClass(
+            title: titleController.text,
+            image: imagePath,
+          );
+
+          await ReportHelper.addReport(report);
+
+          if (!context.mounted) return;
+          Navigator.of(context).pop(true);
+          ScaffoldMessenger.of(context).showSnackBar(reportAdded);
+          print('added ${report.title}');
+        },
+        backgroundColor: Colors.cyan[50], //todo
+        child: Icon(
+          Icons.add_rounded,
+          color: Colors.blueGrey[900],
         ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
+  }
+
+  Widget pickImageButton(
+      {required String text,
+      required IconData icon,
+      required VoidCallback onClick}) {
+    return Container(
+      decoration: BoxDecoration(),
+      child: ElevatedButton.icon(
+        onPressed: onClick,
+        icon: Icon(
+          icon,
+          color: Colors.blueGrey[900],
+        ),
+        label: Text(
+          text,
+          style: TextStyle(color: Colors.blueGrey[900]),
+        ),
+        style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all(Colors.cyan[50])),
       ),
     );
   }
-  Widget pickImageButton({required String text,required IconData icon,required VoidCallback onClick}){
-      return Container(
-        child: ElevatedButton.icon(
-            onPressed: onClick,
-            icon: Icon(icon),
-            label: Text(text)),
-      );
-  }
-
-
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lifeline/entities/weightClass.dart';
-import 'package:lifeline/helper/weightHelper.dart';
+import 'package:lifeline/helper/databaseHelper.dart';
 import 'package:lifeline/pages/addWeight.dart';
 import 'package:lifeline/widgets/graph.dart';
 
@@ -37,7 +37,7 @@ class _WeightState extends State<Weight> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Weight & BMI'),
-        centerTitle: true,
+        // centerTitle: true,
         actions: [
           ElevatedButton.icon(
             onPressed: () async {
@@ -68,7 +68,7 @@ class _WeightState extends State<Weight> {
 
   //functions
   Future getWeights() async {
-    List<WeightClass>? ListWeights = await WeightDBhelper.getAllWeights();
+    List<WeightClass>? ListWeights = await DBhelper.getAllWeights();
 
     setState(() {
       weights = ListWeights!;
