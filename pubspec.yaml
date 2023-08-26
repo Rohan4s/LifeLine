@@ -43,7 +43,7 @@ dependencies:
   flutter_native_timezone:
   sqflite:
   flutter_staggered_animations:
-  android_alarm_manager_plus:
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'LifeLine',
       debugShowCheckedModeBanner: false,
-      home:HomePage()
+      home:AppHomePage()
     );
   }
 }

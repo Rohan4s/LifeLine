@@ -1,6 +1,7 @@
 
 import 'package:appointment/controllers/med_controller.dart';
 import 'package:appointment/models/medicine.dart';
+import 'package:appointment/services/notification_services.dart';
 import 'package:appointment/ui/widgets/button.dart';
 import 'package:appointment/ui/widgets/mad_task_bar.dart';
 import 'package:appointment/ui/widgets/mad_task_tile.dart';
@@ -76,6 +77,10 @@ class _MedHomePageState extends State<MedHomePage> {
 
             itemBuilder: (_,index){
               print(_medicineController.medicineList.length);
+             // NotifyHelper notifyHelper=NotifyHelper();
+              //notifyHelper.scheduledNotification(
+
+              // )
 
               return  AnimationConfiguration.staggeredList(
                   position: index,

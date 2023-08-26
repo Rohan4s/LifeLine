@@ -16,7 +16,12 @@ class TaskController extends GetxController{
 
   void getTasks()async{
     List<Map<String,dynamic>>tasks=await DBHelper.query();
+
     taskList.assignAll(tasks.map((data) => new Task.fromJson(data)).toList());
+  }
+  Future<List<Task?>> getTasksList()async{
+    List<Map<String,dynamic>>tasks=await DBHelper.query();
+    return List.generate(tasks.length, (index) => Task.fromJson(tasks[index]));
   }
 
   void delete(Task task){
