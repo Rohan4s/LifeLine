@@ -88,24 +88,25 @@ class _AddDocumentState extends State<AddDocument> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+
         onPressed: () async {
           String time;
-
           if (_image == null) {
             showAddImageSnackbar(context);
             return;
           }
-
           if (titleController.text.isEmpty) {
+              showEmptyTitleSnackbar(context);
+            return;
             // time = ' ';
-            time = DateFormat('yyyyMMddHHmmss').format(DateTime.now()).toString();
-          } else {
+            // time = DateFormat('yyyyMMddHHmmss').format(DateTime.now()).toString();
+          }
+          else {
             time = titleController.text;
           }
-
           String imagePath = await saveImageLocally(_image!);
           Document document = Document(
-            title: time,
+            title: titleController.text,
             image: imagePath,
           );
 
@@ -119,6 +120,7 @@ class _AddDocumentState extends State<AddDocument> {
           print('added ${document.title}');
 
         },
+
         backgroundColor: Colors.cyan[50], //todo
         child: Icon(
           Icons.add_rounded,
@@ -199,7 +201,7 @@ class _AddDocumentState extends State<AddDocument> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          'Please Enter ${isReport ? '' : ''}Title',
+          'Added Document Successfully',
           style: TextStyle(color: Colors.cyan[50]),
         ),
         duration: Duration(seconds: 2), // Adjust the duration as needed

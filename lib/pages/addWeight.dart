@@ -46,9 +46,13 @@ class _AddWeightState extends State<AddWeight> {
     bmi = double.parse(bmi.toStringAsFixed(2));
 
     WeightClass newWeight = WeightClass(weight: inputWeight, bmi: bmi);
-
-    int id = await WeightHelper.addWeight(newWeight,weights[0]);
-
+    int id;
+    if(weights==null || weights.isEmpty) {
+      id = await WeightHelper.addWeight(newWeight, null);
+    }
+    else{
+      id = await WeightHelper.addWeight(newWeight, weights[0]);
+    }
     print('$id inserted');
     if (!context.mounted) return;
     Navigator.of(context).pop(true);

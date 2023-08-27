@@ -94,7 +94,7 @@ class _LineChartWidget2State extends State<LineChartWidget2> {
                 spots: systolicSpots,
 
                 isCurved: false,
-                color: curveColor,
+                color: Colors.orange,
                 barWidth: 3,
                 belowBarData: BarAreaData(
                   show: false,
@@ -106,7 +106,7 @@ class _LineChartWidget2State extends State<LineChartWidget2> {
                 spots: diastolicSpots,
 
                 isCurved: false,
-                color: curveColor,
+                color: Colors.teal[400],
                 barWidth: 3,
                 belowBarData: BarAreaData(
                   show: false,

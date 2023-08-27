@@ -8,7 +8,7 @@ class WeightHelper{
 
   static const String _weightTableName = 'weight';
 
-  static Future<int> addWeight(WeightClass newWeight,WeightClass lastAddedWeight ) async {
+  static Future<int> addWeight(WeightClass newWeight,WeightClass? lastAddedWeight ) async {
     final db = await DBhelper.getDB();
     if (db == null) {
       print('fkyou');

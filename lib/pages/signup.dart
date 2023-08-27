@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:lifeline/entities/user.dart';
 import 'package:lifeline/helper/userHelper.dart';
 import 'Home.dart';
@@ -24,7 +25,6 @@ class _SignupState extends State<Signup> {
   }
 
   Future<void> signedUp(BuildContext context) async {
-
     List<User>? users = await UserHelper.getUser();
     if (users != null && users.isNotEmpty) {
       Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
@@ -66,15 +66,11 @@ class _SignupState extends State<Signup> {
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Enter Your Name'),
                   validator: (value) {
-                    if (value!.isEmpty || !RegExp(r'[0-9.]').hasMatch(value!)) {
+                    if (value!.isEmpty) {
                       return 'Cannot Be Empty';
                     }
                   },
                   controller: nameController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: false,
-                    signed: false,
-                  ),
                 ),
                 SizedBox(
                   height: height * 0.04,
@@ -82,15 +78,11 @@ class _SignupState extends State<Signup> {
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Enter Your Email'),
                   validator: (value) {
-                    if (value!.isEmpty || !RegExp(r'[0-9.]').hasMatch(value!)) {
+                    if (value!.isEmpty) {
                       return 'Cannot Be Empty';
                     }
                   },
                   controller: emailController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: false,
-                    signed: false,
-                  ),
                 ),
                 SizedBox(
                   height: height * 0.04,
@@ -98,8 +90,8 @@ class _SignupState extends State<Signup> {
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Enter Your Age'),
                   validator: (value) {
-                    if (value!.isEmpty || !RegExp(r'[0-9.]').hasMatch(value!)) {
-                      return 'Cannot Be Empty';
+                    if (value!.isEmpty || !RegExp(r'^-?[0-9]+$').hasMatch(value!)) {
+                      return 'Must Be An Integer';
                     }
                   },
                   controller: ageController,
@@ -112,10 +104,11 @@ class _SignupState extends State<Signup> {
                   height: height * 0.04,
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Enter Your height'),
+                  decoration:
+                      InputDecoration(labelText: 'Enter Your height in meter'),
                   validator: (value) {
                     if (value!.isEmpty || !RegExp(r'[0-9.]').hasMatch(value!)) {
-                      return 'Cannot Be Empty';
+                      return 'Must be a number';
                     }
                   },
                   controller: heightController,
@@ -134,44 +127,17 @@ class _SignupState extends State<Signup> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          User user = User(
-              name: nameController.text.isEmpty ? ' ' : nameController.text,
-              email: emailController.text.isEmpty ? ' ' : emailController.text,
-              age: ageController.text.isEmpty
-                  ? 0
-                  : int.parse(ageController.text),
-              height:
-                  heightController.text.isEmpty ? 0 : double.parse(heightController.text));
-          UserHelper.addUser(user);
-          print(user.height);
-          Navigator.push(
-              context, MaterialPageRoute(builder: (context) => Home()));
-          // if (formKey.currentState!.validate()) {
-          //   int systolicPressure = int.parse(systolicController.text);
-          //   int diastolicPressure = int.parse(diastolicController.text);
-          //   int pulse = int.parse(pulseController.text);
-          //
-          //   PressureClass pressure = PressureClass(
-          //       systolicPressure: systolicPressure,
-          //       diastolicPressure: diastolicPressure,
-          //       pulse: pulse);
-          //
-          //   PressureHelper.addPressure(pressure);
-          //
-          //   if(!context.mounted)return;
-          //   Navigator.of(context).pop(true);
-          //   ScaffoldMessenger.of(context).showSnackBar(setupProfile);
-          //
-          //   print('valid');
-          //   print(systolicController.text);
-          //   print(diastolicController.text);
-          //   print(pulseController.text);
-          // } else {
-          //   print('invalid');
-          //   print(systolicController.text);
-          //   print(diastolicController.text);
-          //   print(pulseController.text);
-          // }
+          if (formKey.currentState!.validate()) {
+            User user = User(
+                name: nameController.text,
+                email: emailController.text,
+                age: int.parse(ageController.text),
+                height: double.parse(heightController.text));
+            UserHelper.addUser(user);
+            print(user.height);
+            Navigator.push(
+                context, MaterialPageRoute(builder: (context) => Home()));
+          }
         },
         child: Icon(Icons.arrow_forward),
       ),

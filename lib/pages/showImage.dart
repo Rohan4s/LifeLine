@@ -25,10 +25,10 @@ class _ShowImageState extends State<ShowImage> {
     print(widget.img);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title,style: const TextStyle(color: Colors.white),),
-        backgroundColor: Colors.indigo,
+        title: Text(widget.title,style: const TextStyle(color: Colors.black),),
+        backgroundColor: Colors.transparent,
       ),
-      body: Container(
+      body: Center(
         child: Image.file(File(widget.img))
       ),
     );
