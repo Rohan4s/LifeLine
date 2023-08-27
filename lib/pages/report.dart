@@ -1,7 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:lifeline/helper/databaseHelper.dart';
+import 'package:lifeline/helper/reportHelper.dart';
 import 'package:lifeline/pages/addReport.dart';
-import 'package:lifeline/entities/reportClass.dart';
+import 'package:lifeline/entities/Documents.dart';
 import 'package:lifeline/pages/showImage.dart';
 
 class Report extends StatefulWidget {
@@ -12,14 +13,10 @@ class Report extends StatefulWidget {
 }
 
 class _ReportState extends State<Report> {
+  final updatedSnackbar = const SnackBar(content: Text('Updated Report Title'));
   late TextEditingController titleController;
   bool _empty = false;
-  int count = 15;
-  final List<Map<String, dynamic>> _items = List.generate(
-      100,
-      (index) =>
-          {"id": index, "title": "Item $index", "subtitle": "Subtitle $index"});
-  List<ReportClass> reports = [ReportClass(title: '', image: null)];
+  List<Document> reports = [Document(title: '', image: null)];
 
   @override
   void initState() {
@@ -30,7 +27,7 @@ class _ReportState extends State<Report> {
   }
 
   Future getReports() async {
-    List<ReportClass>? listReports = await DBhelper.getAllReports();
+    List<Document>? listReports = await ReportHelper.getAllReports();
     for (int i = 0; i < listReports!.length; i++) {
       print(
           '$i -> ${listReports[i].title} -> ${listReports[i].date} -> ${listReports[i].time}');
@@ -55,24 +52,6 @@ class _ReportState extends State<Report> {
         ),
         backgroundColor: Colors.indigo,
         elevation: 252,
-        // actions: [
-        //   IconButton(
-        //     onPressed: () async {
-        //       final bool? added = await Navigator.push(context,
-        //           MaterialPageRoute(builder: (context) => const AddReport()));
-        //       if (added ?? false) {
-        //         getReports();
-        //       }
-        //     },
-        //     // color: Colors.yellow,
-        //     // backgroundColor: Colors.cyan[400], //todo
-        //     icon: const Icon(
-        //       Icons.add_rounded,
-        //       color: Colors.white,
-        //       size: 30,
-        //     ),
-        //   ),
-        // ],
       ),
       body: Container(
         padding: const EdgeInsets.only(bottom: 60),
@@ -91,63 +70,59 @@ class _ReportState extends State<Report> {
             itemCount: reports.length,
             itemBuilder: (_, index) => Card(
               margin: const EdgeInsets.all(10),
-              child: Container(
-                child: ListTile(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ShowImage(
-                            reports[index].image.toString(),
-                            reports[index].title),
-                      ),
-                    );
-                  },
-                  leading: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: 24,
-                      minHeight: 54,
-                      maxWidth: 35,
-                      maxHeight: 55,
+              child: ListTile(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ShowImage(
+                          reports[index].image.toString(),
+                          reports[index].title),
                     ),
-                    child: Icon(
-                      Icons.picture_as_pdf_rounded,
-                      color: Colors.blueGrey[900],
-                      size: 36,
-                    ),
+                  );
+                },
+                leading: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: 24,
+                    minHeight: 54,
+                    maxWidth: 35,
+                    maxHeight: 55,
                   ),
-                  title: Text(
-                    reports[index].title,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  child: Icon(
+                    Icons.picture_as_pdf_rounded,
+                    color: Colors.blueGrey[900],
+                    size: 36,
                   ),
-                  subtitle: Text(
-                    reports[index].time.toString() +
-                        '  ' +
-                        reports[index].date.toString(),
-                    style: const TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey,
-                    ),
+                ),
+                title: Text(
+                  reports[index].title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                          onPressed: () {
-                            _showUpdateModal(
-                                context, index, getReports, titleController);
-                          },
-                          icon: const Icon(Icons.edit)),
-                      IconButton(
-                          onPressed: () {
-                            _showDeleteConfirmation(context, index, getReports);
-                          },
-                          icon: const Icon(Icons.delete)),
-                    ],
+                ),
+                subtitle: Text(
+                  '${reports[index].time.toString()}  ${reports[index].date.toString()}',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
                   ),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          _showUpdateModal(
+                              context, index, getReports, titleController);
+                        },
+                        icon: const Icon(Icons.edit)),
+                    IconButton(
+                        onPressed: () {
+                          _showDeleteConfirmation(context, index, getReports);
+                        },
+                        icon: const Icon(Icons.delete)),
+                  ],
                 ),
               ),
             ),
@@ -206,14 +181,26 @@ class _ReportState extends State<Report> {
                 const SizedBox(height: 40),
                 ElevatedButton.icon(
                   onPressed: () async {
-                    await DBhelper.updateReport(
+                    setState(() {
+                      _empty = titleController.text.isEmpty ? true : false;
+                    });
+
+                    if (_empty) {
+                      // Show a snackbar or some feedback to the user
+                      return;
+                    }
+
+                    await ReportHelper.updateReport(
                         reports[index], titleController.text);
                     setState(() {
                       getReports();
                     });
-                    if(context.mounted) {
-                      Navigator.pop(context);
-                    }
+
+                    if (!context.mounted) return;
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(updatedSnackbar);
+                    titleController.clear();
+
                   },
                   icon: const Icon(Icons.send),
                   label: const Text('Update report'),
@@ -262,7 +249,19 @@ class _ReportState extends State<Report> {
                 children: [
                   ElevatedButton(
                     onPressed: () async {
-                      await DBhelper.deleteReport(reports[index]);
+                      try {
+                        final file = File(reports[index].image.toString());
+                        if (await file.exists()) {
+                          await file.delete();
+                          print('Image deleted successfully');
+                        } else {
+                          print('Image does not exist at the specified path');
+                        }
+                      } catch (e) {
+                        print('Error while deleting image: $e');
+                      }
+
+                      await ReportHelper.deleteReport(reports[index]);
                       if (context.mounted) {
                         Navigator.of(context).pop(true);
                       }

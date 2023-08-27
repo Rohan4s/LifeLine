@@ -33,7 +33,9 @@ class _LineChartWidgetState extends State<LineChartWidget> {
   Widget build(BuildContext context) {
 
     final borderColor = Colors.black;
-    final bgColor = Theme.of(context).primaryColorLight;
+    final belowCurveColor = Colors.cyan;
+    const bgColor = Colors.white54;
+    const Color curveColor = Colors.grey;
     double maxX = 10, minX = 1, maxY = 0, minY = 100000;
 
     graphSpots.clear();
@@ -72,18 +74,18 @@ class _LineChartWidgetState extends State<LineChartWidget> {
         gridData: getGridData(),
         borderData: FlBorderData(
           show: true,
-          border: Border.all(color: const Color(0xff37434d), width: 1),
+          border: Border.all(color:Colors.black, width: 1),
         ),
         lineBarsData: [
           LineChartBarData(
             spots: graphSpots,
 
-            isCurved: true,
-            color: gradientColors[1],
-            barWidth: 6,
+            isCurved: false,
+            color: curveColor,
+            barWidth: 3,
             belowBarData: BarAreaData(
-              show: true,
-              color: gradientColors[0],
+              show: false,
+              color: belowCurveColor,
             ),
 
           ),
@@ -96,11 +98,11 @@ class _LineChartWidgetState extends State<LineChartWidget> {
         show: true,
         getDrawingHorizontalLine: (value) {
           return FlLine(
-            color: const Color(0xff37434d),
-            strokeWidth: 1,
+            color: Colors.grey,
+            strokeWidth: 0.7,
           );
         },
-        drawVerticalLine: true,
+        drawVerticalLine: false,
         getDrawingVerticalLine: (value) {
           return const FlLine(
             color: Color(0xff37434d),

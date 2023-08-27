@@ -13,18 +13,10 @@ class ShowImage extends StatefulWidget {
 }
 
 class _ShowImageState extends State<ShowImage> {
-  // LoadImageFromPreferences() {
-  //   Utility.getImageFromPreferences().then((img) {
-  //     if (img == null) {
-  //       return null;
-  //     }
-  //     return Utility.imageFromBase64String(img);
-  //   });
-  // }
+
   @override
   void initState() {
     // TODO: implement initState
-    // LoadImageFromPreferences();
     super.initState();
   }
 
@@ -33,7 +25,8 @@ class _ShowImageState extends State<ShowImage> {
     print(widget.img);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(widget.title,style: const TextStyle(color: Colors.white),),
+        backgroundColor: Colors.indigo,
       ),
       body: Container(
         child: Image.file(File(widget.img))

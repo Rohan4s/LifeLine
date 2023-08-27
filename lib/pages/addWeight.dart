@@ -1,51 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:lifeline/entities/user.dart';
 import 'package:lifeline/entities/weightClass.dart';
-import 'package:lifeline/helper/databaseHelper.dart';
+import 'package:lifeline/helper/userHelper.dart';
+import 'package:lifeline/helper/weightHelper.dart';
 
 class AddWeight extends StatefulWidget {
-  const AddWeight({Key? key}) : super(key: key);
   @override
   State<AddWeight> createState() => _AddWeightState();
 }
 
 class _AddWeightState extends State<AddWeight> {
+  bool _empty = false;
   final weightController = TextEditingController();
+  final weightAdded = SnackBar(
+    content: Text(
+      'Successfully Added Your Weight',
+      style: TextStyle(color: Colors.blueGrey[900]),
+    ),
+    backgroundColor: Colors.cyan[50],
+  );
+  List<WeightClass> weights = [];
 
   @override
   void initState() {
     // TODO: implement initState
-    // weightController.addListener(() {
-    //   print(weightController.text);
-    // });
+    getWeights();
     super.initState();
   }
 
   submit() async {
-
-    double height = 1.52;
+    double height = 1.5;
+    List<User>? users = await UserHelper.getUser();
+    if (users != null) height = users[0].height;
+    print(height);
     print(weightController.text);
 
     // closes keyboard
     FocusManager.instance.primaryFocus?.unfocus();
 
-    double weight = double.parse(weightController.text);
-    double bmi = weight / (height * height);
-    bmi = double.parse(bmi.toStringAsFixed(2));
-    WeightClass weightModel = WeightClass(weight: weight, bmi: bmi);
-    int id = await DBhelper.addWeight(weightModel);
-    print('$id inserted');
-    if(!context.mounted)return;
-    Navigator.of(context).pop(true);
 
+
+    double inputWeight = double.parse(weightController.text);
+    double bmi = inputWeight / (height * height);
+    bmi = double.parse(bmi.toStringAsFixed(2));
+
+    WeightClass newWeight = WeightClass(weight: inputWeight, bmi: bmi);
+
+    int id = await WeightHelper.addWeight(newWeight,weights[0]);
+
+    print('$id inserted');
+    if (!context.mounted) return;
+    Navigator.of(context).pop(true);
+    ScaffoldMessenger.of(context).showSnackBar(weightAdded);
   }
 
   @override
   Widget build(BuildContext context) {
+
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('New Weight'),
-        backgroundColor: Colors.blue,
+        title: const Text(
+          'New Weight',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+        backgroundColor: Colors.indigo,
       ),
       body: Container(
           padding: const EdgeInsets.all(40.0),
@@ -54,14 +75,23 @@ class _AddWeightState extends State<AddWeight> {
             children: <Widget>[
               TextField(
                 textInputAction: TextInputAction.send,
-                onSubmitted: (value){
+                onSubmitted: (value) {
+                  setState(() {
+                    _empty = weightController.text.isEmpty ? true : false;
+                  });
+                  if (_empty) {
+                    return;
+                  }
                   submit();
                 },
                 decoration: InputDecoration(
-
+                  errorText: _empty ? 'You must enter your weight' : null,
                   labelText: "Enter your weight",
                   suffixIcon: IconButton(
-                    icon: Icon(Icons.send),
+                    icon: Icon(
+                      Icons.send,
+                      color: Colors.blueGrey[900],
+                    ),
                     onPressed: submit,
                   ),
                 ),
@@ -87,13 +117,15 @@ class _AddWeightState extends State<AddWeight> {
     );
   }
 
-  Widget pickImageButton(
-      {required String text,
-      required IconData icon,
-      required VoidCallback onClick}) {
-    return Container(
-      child: ElevatedButton.icon(
-          onPressed: onClick, icon: Icon(icon), label: Text(text)),
-    );
+  Future getWeights() async {
+    List<WeightClass>? listWeights = await WeightHelper.getAllWeights();
+
+    setState(() {
+      if (listWeights == null) {
+        weights = [];
+      } else {
+        weights = listWeights;
+      }
+    });
   }
 }

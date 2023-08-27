@@ -40,6 +40,12 @@ dependencies:
   date_picker_timeline:
   intl:
   shared_preferences: ^2.2.0
+  fan_floating_menu: any
+  get:
+  flutter_staggered_animations:
+  flutter_local_notifications:
+  flutter_spinkit: ^5.2.0
+
 
 
   # The following adds the Cupertino Icons font to your application.

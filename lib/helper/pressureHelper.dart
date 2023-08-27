@@ -1,47 +1,40 @@
-import 'package:intl/intl.dart';
+import 'package:lifeline/entities/pressureClass.dart';
 import 'package:lifeline/helper/databaseHelper.dart';
 import 'package:sqflite/sqflite.dart';
 
-import '../entities/weightClass.dart';
 
-class WeightHelper{
+class PressureHelper{
 
-  static const String _weightTableName = 'weight';
+  static const String _pressureTableName = 'pressure';
 
-  static Future<int> addWeight(WeightClass newWeight,WeightClass lastAddedWeight ) async {
+  static Future<int> addPressure(PressureClass pressure) async {
     final db = await DBhelper.getDB();
-    if (db == null) {
+    if (db == null)
       print('fkyou');
-      return -1;
-    }
+    else
+      print('asd');
 
-    String date = DateFormat('yyyy-MM-dd').format(DateTime.now()).toString();
-
-
-
-    if(lastAddedWeight!=null && lastAddedWeight.date == newWeight.date){
-      return await updateWeight(newWeight,lastAddedWeight);
-    }
-
-    else {
-      return await db.insert(_weightTableName, newWeight.toJson(),
+    return await db.insert(_pressureTableName, pressure.toJson(),
         conflictAlgorithm: ConflictAlgorithm.replace);
-    }
   }
 
-  static Future<int> deleteAllWeights() async {
+  static Future<int> deleteAllPressures() async {
     final db = await DBhelper.getDB();
-    return await db.rawDelete('DELETE FROM $_weightTableName ');
+    if (db == null)
+      print('fkyou');
+    else
+      print('asd');
+    return await db.rawDelete('DELETE FROM $_pressureTableName ');
   }
 
   //
-  static Future<List<WeightClass>?> getAllWeights() async {
+  static Future<List<PressureClass>?> getAllPressures() async {
     final db = await DBhelper.getDB();
     if (db == null) print('fk you');
     // else
     //   print('asd');
     final List<Map<String, dynamic>> maps = await db.rawQuery(
-        'SELECT * FROM $_weightTableName ORDER BY date DESC,time DESC');
+        'SELECT * FROM $_pressureTableName ORDER BY date DESC,time DESC');
     // final List<Map<String, dynamic>> maps = await db.query(_tableName);
 
     if (maps.isEmpty) {
@@ -49,19 +42,9 @@ class WeightHelper{
       return null;
     }
 
-    return List.generate(maps.length, (index) => WeightClass.fromJson(maps[index]));
+    return List.generate(
+        maps.length, (index) => PressureClass.fromJson(maps[index]));
   }
-  static Future<int> updateWeight(WeightClass newWeight, WeightClass lastAddedWeight) async {
-
-    final db = await DBhelper.getDB();
-
-    print(lastAddedWeight);
-    print(newWeight);
-    String time = DateFormat("hh:mm a").format(DateTime.now()).toString();
-
-    return await db.rawUpdate('UPDATE $_weightTableName SET weight=?, bmi=? WHERE date=?',[newWeight.weight,newWeight.bmi,lastAddedWeight.date]);
-  }
-
 }
 
 

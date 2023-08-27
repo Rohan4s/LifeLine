@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:lifeline/entities/reportClass.dart';
+import 'package:lifeline/entities/Documents.dart';
 import 'package:lifeline/helper/databaseHelper.dart';
 import 'package:lifeline/helper/reportHelper.dart';
 import 'package:path_provider/path_provider.dart';
@@ -21,10 +21,10 @@ class _AddReportState extends State<AddReport> {
   final noImageSnackBar = const SnackBar(
     content: Text('An image of the report must be added'),
   );
-  final reportAdded = const SnackBar(
+  final reportAdded =  SnackBar(
     content: Text(
       'Successfully Added Report',
-      style: TextStyle(color: Colors.red),
+      style: TextStyle(color: Colors.cyan[50]),
     ),
   );
 
@@ -122,10 +122,11 @@ class _AddReportState extends State<AddReport> {
           }
           if (_image == null) {
             ScaffoldMessenger.of(context).showSnackBar(noImageSnackBar);
+            return;
           }
 
           String imagePath = await saveImageLocally(_image!);
-          ReportClass report = ReportClass(
+          Document report = Document(
             title: titleController.text,
             image: imagePath,
           );

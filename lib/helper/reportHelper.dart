@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:lifeline/entities/reportClass.dart';
+import 'package:lifeline/entities/Documents.dart';
 import 'package:lifeline/helper/databaseHelper.dart';
 import 'package:sqflite/sqflite.dart';
 
 class ReportHelper{
 
-  static String _reportTableName = 'report';
+  static const String _reportTableName = 'report';
 
-  static Future<int> addReport(ReportClass report) async {
+  static Future<int> addReport(Document report) async {
     final db = await DBhelper.getDB();
     if (db == null)
       print('Failed to connect to database');
@@ -18,7 +18,7 @@ class ReportHelper{
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  static Future<int> updateReport(ReportClass report,String newTitle) async {
+  static Future<int> updateReport(Document report,String newTitle) async {
     final db = await DBhelper.getDB();
 
     return await db.rawUpdate('UPDATE $_reportTableName SET title=? WHERE date=? AND time=?',[newTitle,report.date,report.time]);
@@ -29,14 +29,14 @@ class ReportHelper{
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  static Future<int> deleteReport(ReportClass report) async {
+  static Future<int> deleteReport(Document report) async {
     final db = await DBhelper.getDB();
     return await db.rawDelete('DELETE FROM $_reportTableName '
         'WHERE title=? AND time=?',[report.title,report.time]);
   }
 
   //
-  static Future<List<ReportClass>?> getAllReports() async {
+  static Future<List<Document>?> getAllReports() async {
     final db = await DBhelper.getDB();
     if (db == null) print('fk you');
     // else
@@ -51,6 +51,6 @@ class ReportHelper{
     }
 
     return List.generate(
-        maps.length, (index) => ReportClass.fromJson(maps[index]));
+        maps.length, (index) => Document.fromJson(maps[index]));
   }
 }

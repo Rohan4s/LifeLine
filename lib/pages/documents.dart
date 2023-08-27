@@ -1,45 +1,58 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:lifeline/helper/prescriptionHelper.dart';
 import 'package:lifeline/helper/reportHelper.dart';
-import 'package:lifeline/pages/addPrescription.dart';
-import 'package:lifeline/pages/addReport.dart';
+import 'package:lifeline/pages/addDocument.dart';
 import 'package:lifeline/entities/Documents.dart';
+import 'package:lifeline/pages/fab.dart';
 import 'package:lifeline/pages/showImage.dart';
+import 'package:fan_floating_menu/fan_floating_menu.dart';
 
-import '../helper/prescriptionHelper.dart';
-
-class Prescription extends StatefulWidget {
-  const Prescription({Key? key}) : super(key: key);
+class Documents extends StatefulWidget {
+  bool isReport;
+  Documents({super.key, required this.isReport});
 
   @override
-  State<Prescription> createState() => _PrescriptionState();
+  State<Documents> createState() => _DocumentsState();
 }
 
-class _PrescriptionState extends State<Prescription> {
-  final updatedSnackbar = const SnackBar(content: Text('Updated Prescription Title'));
+class _DocumentsState extends State<Documents> {
   late TextEditingController titleController;
   bool _empty = false;
-  List<Document> prescriptions = [Document(title: '', image: null)];
+  late bool isReport; // false -> prescription page
+  List<Document> documents = [
+    Document(title: 'No Documents Found', image: null)
+  ];
 
   @override
   void initState() {
     // TODO: implement initState
     titleController = TextEditingController();
-    getPrescriptions();
+    setState(() {
+      isReport = widget.isReport;
+    });
+    getDocuments();
     super.initState();
   }
 
-  Future getPrescriptions() async {
+  Future getDocuments() async {
+    List<Document>? listDocuments = [];
+    listDocuments = isReport
+        ? await ReportHelper.getAllReports()
+        : await PrescriptionHelper.getAllPrescriptions();
 
-    List<Document>? listPrescriptions = await PrescriptionHelper.getAllPrescriptions(); ///todo
-
-    for (int i = 0; i < listPrescriptions!.length; i++) {
-      print(
-          '$i -> ${listPrescriptions[i].title} -> ${listPrescriptions[i].date} -> ${listPrescriptions[i].time}');
-      print(listPrescriptions[i].image);
-    }
+    // for (int i = 0; i < listDocuments!.length ; i++) {
+    //   print(
+    //       '$i -> ${listDocuments[i].title} -> ${listDocuments[i].date} -> ${listDocuments[i].time}');
+    //   print(listDocuments[i].image);
+    // }
     setState(() {
-      prescriptions = listPrescriptions!;
+      if (listDocuments == null) {
+        documents.clear();
+        documents.add(Document(title: 'No Document Found', image: ''));
+      } else {
+        documents = listDocuments;
+      }
     });
   }
 
@@ -49,11 +62,46 @@ class _PrescriptionState extends State<Prescription> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         centerTitle: true,
-        title: const Text(
-          'Prescriptions',
-          style: TextStyle(
-            color: Colors.white,
-          ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  isReport = true;
+                });
+                getDocuments();
+              },
+              style: const ButtonStyle(),
+              child: Text(
+                'Reports',
+                style: isReport
+                    ? const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18)
+                    : const TextStyle(color: Colors.black),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  isReport = false;
+                  print(isReport);
+                });
+                getDocuments();
+              },
+              child: Text(
+                'Prescriptions',
+                style: isReport
+                    ? const TextStyle(color: Colors.black)
+                    : const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18),
+              ),
+            ),
+          ],
         ),
         backgroundColor: Colors.indigo,
         elevation: 252,
@@ -72,7 +120,7 @@ class _PrescriptionState extends State<Prescription> {
           ),
           dense: true,
           child: ListView.builder(
-            itemCount: prescriptions.length,
+            itemCount: documents.length,
             itemBuilder: (_, index) => Card(
               margin: const EdgeInsets.all(10),
               child: ListTile(
@@ -81,8 +129,8 @@ class _PrescriptionState extends State<Prescription> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ShowImage(
-                          prescriptions[index].image.toString(),
-                          prescriptions[index].title),
+                          documents[index].image.toString(),
+                          documents[index].title),
                     ),
                   );
                 },
@@ -100,14 +148,14 @@ class _PrescriptionState extends State<Prescription> {
                   ),
                 ),
                 title: Text(
-                  prescriptions[index].title,
+                  documents[index].title,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 subtitle: Text(
-                  '${prescriptions[index].time.toString()}  ${prescriptions[index].date.toString()}',
+                  '${documents[index].time.toString()}  ${documents[index].date.toString()}',
                   style: const TextStyle(
                     fontSize: 10,
                     color: Colors.grey,
@@ -119,12 +167,12 @@ class _PrescriptionState extends State<Prescription> {
                     IconButton(
                         onPressed: () {
                           _showUpdateModal(
-                              context, index, getPrescriptions, titleController);
+                              context, index, getDocuments, titleController);
                         },
                         icon: const Icon(Icons.edit)),
                     IconButton(
                         onPressed: () {
-                          _showDeleteConfirmation(context, index, getPrescriptions);
+                          _showDeleteConfirmation(context, index, getDocuments);
                         },
                         icon: const Icon(Icons.delete)),
                   ],
@@ -134,26 +182,38 @@ class _PrescriptionState extends State<Prescription> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final bool? added = await Navigator.push(
-              context, MaterialPageRoute(builder: (context) => AddPrescription()));
-          if (added ?? false) {
-            getPrescriptions();
-          }
-        },
-        backgroundColor: Colors.tealAccent[400], //todo
-        child: const Icon(
-          Icons.add_rounded,
-          color: Colors.black,
-        ),
-      ),
+      floatingActionButton: Fab(
+          colors: [Colors.teal[800], Colors.cyan[800]],
+          labels: ['Report', 'Prescription'],
+          count: 2,
+          icons: [
+            Icons.add,
+            Icons.add,
+          ],
+          functions: [
+            () {
+              addDocument(true);
+            },
+            () {
+              addDocument(false);
+            }
+          ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
+  void addDocument(bool addReport) async {
+    final bool? added = await Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => AddDocument(isReport: addReport)));
+    if (added ?? false) {
+      getDocuments();
+    }
+  }
+
   void _showUpdateModal(BuildContext context, int index,
-      Future Function() getPrescriptions, TextEditingController titleController) {
+      Future Function() getDocuments, TextEditingController titleController) {
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
@@ -194,21 +254,28 @@ class _PrescriptionState extends State<Prescription> {
                       // Show a snackbar or some feedback to the user
                       return;
                     }
+                    isReport
+                        ? await ReportHelper.updateReport(
+                            documents[index], titleController.text)
+                        : await PrescriptionHelper.updatePrescriptions(
+                            documents[index], titleController.text);
 
-                    await PrescriptionHelper.updatePrescriptions(
-                        prescriptions[index], titleController.text);
                     setState(() {
-                      getPrescriptions();
+                      getDocuments();
                     });
 
                     if (!context.mounted) return;
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(updatedSnackbar);
+                    showUpdatedSnackbar(
+                        context,
+                        isReport
+                            ? 'Updated Report successfully'
+                            : 'Updated Prescription successfully');
                     titleController.clear();
-
                   },
                   icon: const Icon(Icons.send),
-                  label: const Text('Update report'),
+                  label:
+                      Text(isReport ? 'Update report' : 'Update Prescription'),
                 ),
                 const SizedBox(height: 40),
               ],
@@ -220,7 +287,7 @@ class _PrescriptionState extends State<Prescription> {
   }
 
   void _showDeleteConfirmation(
-      BuildContext context, int index, Future Function() getPrescriptions) {
+      BuildContext context, int index, Future Function() getDocuments) {
     showModalBottomSheet<void>(
       context: context,
       builder: (BuildContext context) {
@@ -243,7 +310,7 @@ class _PrescriptionState extends State<Prescription> {
                       ),
                     ),
                     TextSpan(
-                        text: ' this prescription?',
+                        text: ' this report?',
                         style: TextStyle(color: Colors.black)),
                   ],
                 ),
@@ -255,7 +322,7 @@ class _PrescriptionState extends State<Prescription> {
                   ElevatedButton(
                     onPressed: () async {
                       try {
-                        final file = File(prescriptions[index].image.toString());
+                        final file = File(documents[index].image.toString());
                         if (await file.exists()) {
                           await file.delete();
                           print('Image deleted successfully');
@@ -266,12 +333,11 @@ class _PrescriptionState extends State<Prescription> {
                         print('Error while deleting image: $e');
                       }
 
-                      await PrescriptionHelper.deletePrescription(prescriptions[index]);
-                      if (!context.mounted)return;
-
-                      Navigator.of(context).pop(true);
-
-                      getPrescriptions(); // Call the callback to trigger refresh
+                      await ReportHelper.deleteReport(documents[index]);
+                      if (context.mounted) {
+                        Navigator.of(context).pop(true);
+                      }
+                      getDocuments(); // Call the callback to trigger refresh
                     },
                     child: const Text(
                       'Yes',
@@ -290,6 +356,15 @@ class _PrescriptionState extends State<Prescription> {
           ),
         );
       },
+    );
+  }
+
+  void showUpdatedSnackbar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2), // Adjust the duration as needed
+      ),
     );
   }
 }
